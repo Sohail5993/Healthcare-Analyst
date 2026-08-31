@@ -1,0 +1,6 @@
+capacity_targeted_pct,patients_enrolled,readmissions_in_targeted_group,est_readmissions_prevented,program_cost_$,gross_savings_$,net_savings_$,roi,readmission_rate_reduction
+5%,150,56,14.0,75000,212800,137800,1.84,2.4%
+10%,300,104,26.0,150000,395200,245200,1.63,4.5%
+15%,450,151,37.8,225000,573800,348800,1.55,6.5%
+20%,600,194,48.5,300000,737200,437200,1.46,8.4%
+30%,900,259,64.8,450000,984200,534200,1.19,11.2%
