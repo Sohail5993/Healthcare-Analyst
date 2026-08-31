@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare Analyst Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; color: #333; }
+        h1 { color: #0A3D91; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        img { max-width: 100%; height: auto; margin-top: 20px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Healthcare Analysis Overview</h1>
+        <p>Welcome to the Healthcare Analyst repository. Below are the primary evaluation metrics and feature impact summaries.</p>
+        
+        <h2>Evaluation Curves</h2>
+        <img src="evaluation_curves.png" alt="Evaluation Curves">
+
+        <h2>SHAP Global Summary</h2>
+        <img src="shap_global_summary.png" alt="SHAP Global Summary">
+    </div>
+</body>
+</html>
