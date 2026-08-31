@@ -3,24 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Healthcare Analyst Dashboard</title>
+    <title>Hospital 30-Day Readmission Prediction</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; color: #333; }
-        h1 { color: #0A3D91; }
-        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        img { max-width: 100%; height: auto; margin-top: 20px; border: 1px solid #ddd; border-radius: 4px; }
+        :root {
+            --primary: #0A3D91;
+            --secondary: #C9A227;
+            --bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text: #1E293B;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.2rem;
+            margin: 0 0 10px 0;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-top: 0;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .img-container {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .data-link {
+            display: inline-block;
+            margin-top: 10px;
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 16px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .data-link:hover {
+            background-color: #083075;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Healthcare Analysis Overview</h1>
-        <p>Welcome to the Healthcare Analyst repository. Below are the primary evaluation metrics and feature impact summaries.</p>
-        
-        <h2>Evaluation Curves</h2>
-        <img src="evaluation_curves.png" alt="Evaluation Curves">
 
-        <h2>SHAP Global Summary</h2>
-        <img src="shap_global_summary.png" alt="SHAP Global Summary">
+<div class="container">
+    <header>
+        <h1>Hospital 30-Day Readmission Prediction</h1>
+        <p class="subtitle">Predicting high-risk unplanned readmissions to target early post-discharge intervention programs.</p>
+    </header>
+
+    <div class="card">
+        <h2>Executive Overview</h2>
+        <p>Under CMS's Hospital Readmissions Reduction Program (HRRP), hospitals face financial penalties for excess 30-day readmissions. This model flags high-risk patients upon discharge, enabling care teams to deploy targeted transitional care resources efficiently.</p>
     </div>
+
+    <div class="card">
+        <h2>Model Evaluation Metrics</h2>
+        <p>Performance comparison across Logistic Regression, Random Forest, and XGBoost models:</p>
+        <div class="img-container">
+            <img src="evaluation_curves.png" alt="Evaluation Curves">
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Feature Importance & Risk Factors (SHAP)</h2>
+        <p>Global impact of key clinical features on readmission risk estimation:</p>
+        <div class="img-container">
+            <img src="shap_global_summary.png" alt="SHAP Global Summary">
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Financial & Cost Impact Analysis</h2>
+        <p>Access the complete dataset for financial metrics and intervention cost projections:</p>
+        <a href="cost_impact_analysis.csv" class="data-link" download>Download Cost Impact CSV Data</a>
+    </div>
+</div>
+
 </body>
 </html>
