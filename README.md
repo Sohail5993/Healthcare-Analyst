@@ -132,7 +132,8 @@ a real business case.
 - Calibration curve (are predicted probabilities trustworthy?)
 
 ## Next steps for a production version
-
+![Evaluation Curves](evaluation_curves.png)
+![SHAP Global Summary](shap_global_summary.png)
 1. Validate on real claims/EHR data with a proper temporal holdout (train
    on earlier years, test on later ones — this dataset uses a random split)
 2. Add social determinants of health (SDOH) features if available —
