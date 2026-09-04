@@ -1,0 +1,25 @@
+{
+  "best_model": "Random Forest",
+  "models": {
+    "Logistic Regression": {
+      "roc_auc": 0.638567983499184,
+      "avg_precision": 0.1665539653255025
+    },
+    "Random Forest": {
+      "roc_auc": 0.6481534096420913,
+      "avg_precision": 0.18019377342556386
+    }
+  },
+  "impact": {
+    "test_patients": 25442,
+    "actual_30d_readmissions": 2839,
+    "flagged_high_risk": 9439,
+    "estimated_preventable_readmissions": 240,
+    "estimated_cost_savings_usd": 3600000,
+    "assumptions": {
+      "avg_cost_per_readmission_usd": 15000,
+      "relative_reduction_among_intervened_true_positives": 0.15,
+      "threshold": 0.5
+    }
+  }
+}
