@@ -1,110 +1,108 @@
-# Strategic HealthCare BI Analyst — Portfolio
+# Provider Network Adequacy Analysis
 
-Source for the Strategic HealthCare BI Analyst portfolio site, built as a
-multi-page static site (no build step, no framework) and served via
-GitHub Pages.
+**Evaluating whether a payer's provider network meets access standards across specialty, distance, and wait-time thresholds.**
 
-## Pages
+*Strategic HealthCare BI Analyst Portfolio Project — Sohail*
+*Transforming HealthCare Complexities into Growth Blueprints*
 
-| Page | File | Purpose |
-|---|---|---|
-| Home | `index.html` | Hero, three-pillar summary, one featured project |
-| About | `about.html` | Background and how you work |
-| Approach | `approach.html` | The four-step process behind every project |
-| Certifications | `certifications.html` | Credentials — currently template placeholders |
-| Projects | `projects.html` | Full project list |
-| Case Studies | `case-studies.html` | In-depth problem → approach → result write-ups |
-| Blog | `blog.html` | Placeholder — planned topics, no posts yet |
-| Contact | `contact.html` | Email, phone, LinkedIn, GitHub |
+---
 
-Every page shares the same header, nav, and footer for consistency —
-see `build_site.py` for how they're generated (that script is an
-authoring convenience only; it isn't needed to run or deploy the site).
+## Business Problem
 
-## Structure
+Health plans are required — by CMS (Medicare Advantage), state Medicaid contracts, and NCQA accreditation standards — to prove their provider networks give members *reasonable access* to care. "Reasonable access" is typically defined across three dimensions:
+
+1. **Distance / drive time** — how far is the nearest in-network, accepting provider?
+2. **Appointment wait time** — how long until the next available appointment?
+3. **Provider-to-member ratio** — is there enough capacity per specialty per 1,000 members?
+
+Failing these standards risks regulatory penalties, corrective action plans, and — more importantly — real barriers to member care. This project simulates a regional payer's network and tests it against all three dimensions simultaneously, the way a network adequacy or provider strategy team would ahead of a state filing or CMS bid submission.
+
+## Headline Finding
+
+> **The network looks adequate on paper but isn't adequate in practice.**
+
+| Dimension | Compliance Rate |
+|---|---|
+| Distance to nearest provider | **99.7%** ✅ |
+| Provider-to-member ratio (headcount) | **100%** ✅ |
+| Appointment wait time | **78.6%** ⚠️ |
+| **Fully compliant (all standards met)** | **78.3%** |
+
+The plan has plenty of providers within driving distance and technically meets minimum panel-size ratios — but a sizable share of members can't get an appointment within the required window. **Capacity on the roster isn't the same as capacity a member can actually use.** This is the single most common gap real network adequacy filings run into, and it's the one distance-only analyses miss entirely.
+
+### Where it breaks down
+- **Neurology and Behavioral Health** are non-compliant across nearly every county type (as low as 19–43% compliant), driven almost entirely by long waits (22–46 days) rather than distance.
+- **Suburban counties compliance (70.5%) is worse than rural (85.7%)** — a counterintuitive result. Suburban demand is dense enough to overwhelm a comparatively thin specialist panel, while rural counties, despite having far fewer providers, also have far fewer members competing for those slots.
+- **OB/GYN** access lags in the two rural counties (Millbrook, Cedar Ridge) — worth flagging given the acuity of delayed prenatal care.
+
+See `outputs/network_gap_summary.csv` for the full ranked list of every county × specialty combination.
+
+## Methodology
+
+1. **Synthetic data generation** (`scripts/generate_data.py`)
+   - 672 providers across 10 specialties, 8 counties (urban/suburban/rural mix), with panel capacity, accepting-new-patients status, and a simulated "next available appointment" wait time skewed by specialty demand and geography.
+   - 48,000 synthetic members geographically distributed to mirror realistic county population density.
+   - A benchmark standards table modeled on **CMS Medicare Advantage Time & Distance criteria** and common **state Medicaid MCO appointment wait-time standards** (simplified for portfolio use — not an official regulatory table).
+
+2. **Adequacy analysis** (`scripts/network_adequacy_analysis.py`)
+   - For a stratified sample of members (250/county), calculates **haversine distance** to the nearest accepting, in-network provider per specialty and compares it to the distance standard.
+   - Compares each provider's simulated next-available-appointment wait time to the wait-time standard.
+   - Aggregates **provider-to-member ratios** per county × specialty and checks against minimum ratio standards.
+   - Produces a **gap score** ranking every county × specialty combination by severity, combining compliance rate and ratio failure.
+
+3. **Geospatial visualization** (`scripts/coverage_map.py`)
+   - Plots member density against provider locations for the worst-performing specialty (Behavioral Health), annotated with per-county compliance rates.
+
+## Repository Structure
 
 ```
-.
-├── index.html, about.html, approach.html, certifications.html,
-│   projects.html, case-studies.html, blog.html, contact.html
-├── style.css        # all styling, shared across pages
-├── build_site.py    # generates the .html files above (optional to keep)
+Provider-Network-Adequacy-Analysis/
+├── README.md
+├── requirements.txt
 ├── assets/
-│   └── logo.png      # transparent brand logo
-└── README.md
+│   └── logo.png                   # Brand logo (transparent PNG)
+├── data/
+│   ├── providers.csv              # 672 synthetic network providers
+│   ├── members.csv                # 48,000 synthetic member population
+│   └── adequacy_standards.csv     # Distance/wait/ratio benchmark table
+├── scripts/
+│   ├── generate_data.py           # Synthetic data generator
+│   ├── network_adequacy_analysis.py  # Core adequacy calculations + charts
+│   ├── coverage_map.py            # Geospatial coverage visualization
+│   ├── brand_charts.py            # Adds logo/title/tagline header to charts
+│   └── build_one_pager.py         # Builds the branded PDF executive summary
+└── outputs/
+    ├── member_adequacy_detail.csv     # Per-member, per-specialty pass/fail
+    ├── county_specialty_summary.csv   # Aggregated compliance % by county x specialty
+    ├── provider_ratio_summary.csv     # Provider-to-member ratio compliance
+    ├── network_gap_summary.csv        # Ranked list of worst adequacy gaps
+    ├── Provider_Network_Adequacy_One_Pager.pdf   # Branded executive summary
+    ├── charts/                    # Unbranded charts (6 PNGs)
+    └── charts_branded/            # Same charts with logo/title/tagline header
 ```
 
-## Before you publish — things to edit
-
-1. ✅ **Repository links** — already wired to
-   `https://github.com/sohail5993/Strategic-HealthCare-Analyst`
-   throughout, and the results links point to your live Pages site at
-   `https://sohail5993.github.io/Strategic-HealthCare-Analyst/`.
-2. ✅ **About page** — filled in with Sohail Bashir Butt's real bio (10+ years
-   experience, cross-functional BI/data science/strategy/healthcare background).
-3. ✅ **Certifications page** — all 26 verified credentials, grouped into four
-   categories (Healthcare & Life Sciences; Data, Analytics & BI Platforms;
-   Strategy & Business Analytics; Delivery, Governance & Professional
-   Development), each with issuer, year, a healthcare-relevance blurb, and a
-   live verification link.
-4. **Placeholder projects/case studies** — the second and third
-   project entries and the "coming soon" case-study note are there to
-   show the site scales; replace or remove as you build more projects.
-
-Email, phone, and LinkedIn are already filled in with the details you
-provided.
-
-**Note on the readmission project repo:** the live site at
-`sohail5993.github.io/Strategic-HealthCare-Analyst` currently shows a
-simplified version (chart images and a CSV at the repo root, with your
-own README) rather than the fuller package originally put together
-(which included the one-pager PDF, logo, and a nested `outputs/`
-folder). That's completely fine as-is — the portfolio's links point to
-the live results page itself rather than a specific PDF path, so
-nothing will 404. If you'd like the one-pager PDF linkable directly
-later, push it into that repo and I can point the link straight at it
-instead.
-
-## Adding a new project or case study later
-
-- **Projects list**: copy one `<article class="project">...</article>`
-  block in `projects.html` (and optionally `index.html`'s featured
-  section), following the existing pattern — category tag with a color
-  from the logo's arc, title, one paragraph, up to three stats, links.
-- **Case study**: copy the `<section class="case-study">...</section>`
-  block in `case-studies.html` and follow the Problem / Approach /
-  Result structure.
-- **Certifications**: don't hand-edit `certifications.html` — it's
-  generated from the `CERTIFICATIONS` list near the top of
-  `build_site.py`. Add a new dict (`name`, `issuer`, `year`, `link`,
-  `blurb`) to the relevant category, or add a new category block
-  entirely, then regenerate.
-
-If you're using `build_site.py`, add new content there instead and
-regenerate (`python3 build_site.py`) so the shared header/nav/footer
-stay in sync across every page automatically.
-
-## Running locally
-
-No build step — just open `index.html` in a browser, or serve it:
+## How to Run
 
 ```bash
-python3 -m http.server 8000
+cd scripts
+python3 generate_data.py              # regenerates data/*.csv
+python3 network_adequacy_analysis.py  # computes compliance + charts
+python3 coverage_map.py               # renders the geospatial coverage chart
+python3 brand_charts.py               # adds logo/title/tagline header to charts
+python3 build_one_pager.py            # builds the branded PDF one-pager
 ```
 
-then visit `http://localhost:8000`.
+Requires: `pandas`, `numpy`, `matplotlib`, `scipy`.
 
-## Deploying (GitHub Pages)
+## Recommendations a Network Strategy Team Would Take From This
 
-1. Push this repo to GitHub as `strategic-healthcare-analyst-portfolio`
-   (or any name you like — see note below on custom domains).
-2. In the repo, go to **Settings → Pages**.
-3. Under **Build and deployment → Source**, choose **Deploy from a branch**.
-4. Branch: `main`, folder: `/ (root)`. Save.
-5. GitHub will publish the site at:
-   `https://YOUR-USERNAME.github.io/strategic-healthcare-analyst-portfolio/`
+1. **Prioritize Behavioral Health and Neurology recruitment or telehealth expansion** in North Metro, West/South Suburban, and both rural counties — the wait-time gap is the binding constraint, not geography, so adding telehealth-only capacity would close most of it without new brick-and-mortar sites.
+2. **Re-examine "adequate" provider ratios as a filing metric alone.** This network passes ratio standards almost everywhere yet still fails members on wait time — ratio compliance should be paired with an appointment-availability audit before every regulatory filing.
+3. **Investigate suburban specialist capacity specifically** — the counterintuitive suburban-worse-than-rural pattern suggests demand modeling for future recruitment should be done at the county level, not lumped into an urban/suburban/rural bucket.
 
-**Note:** if you name the repo exactly `YOUR-USERNAME.github.io`, GitHub
-Pages will publish it at your bare `https://YOUR-USERNAME.github.io/`
-instead — the cleaner URL for a primary portfolio site, if you don't
-plan to host anything else there.
+## Data Disclaimer
+
+All provider, member, and location data in this project is **synthetically generated** for portfolio demonstration purposes. Coordinates are arbitrary offsets and do not represent real geographic locations, providers, or patients. The adequacy standards table is modeled loosely on public CMS/NCQA/Medicaid MCO frameworks but is simplified and should not be used as an authoritative regulatory reference.
+
+---
+**Contact:** strategichealthcarebianalyst@gmail.com | [LinkedIn](https://linkedin.com/in/aimms-consulting-35895439) | [Portfolio](https://sohail5993.github.io/Strategic-HealthCare-BI-Analyst/)
