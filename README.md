@@ -1,108 +1,151 @@
-# Provider Network Adequacy Analysis
+# Hospital 30-Day Readmission Prediction
 
-**Evaluating whether a payer's provider network meets access standards across specialty, distance, and wait-time thresholds.**
+**Strategic HealthCare BI Analyst** — *Transforming HealthCare Complexities into Growth Blueprints*
 
-*Strategic HealthCare BI Analyst Portfolio Project — Sohail*
-*Transforming HealthCare Complexities into Growth Blueprints*
+Predicts which patients are at high risk of unplanned readmission within
+30 days of discharge, so a hospital's care-management team can target a
+limited-capacity intervention program at the patients who need it most.
 
----
+![Project one-pager summary](outputs/one_pager_preview.png)
 
-## Business Problem
+📄 [View the full one-pager (PDF)](outputs/readmission_one_pager.pdf)
 
-Health plans are required — by CMS (Medicare Advantage), state Medicaid contracts, and NCQA accreditation standards — to prove their provider networks give members *reasonable access* to care. "Reasonable access" is typically defined across three dimensions:
+## Why this matters
 
-1. **Distance / drive time** — how far is the nearest in-network, accepting provider?
-2. **Appointment wait time** — how long until the next available appointment?
-3. **Provider-to-member ratio** — is there enough capacity per specialty per 1,000 members?
+Under CMS's Hospital Readmissions Reduction Program (HRRP), hospitals with
+excess 30-day readmissions face payment penalties of up to 3% of total
+Medicare inpatient reimbursement. Beyond the penalty, each avoidable
+readmission costs roughly **$15,000** and represents a real gap in care
+quality. A model that reliably flags high-risk patients at discharge lets
+hospitals target transitional-care resources (follow-up calls, med
+reconciliation, early post-discharge visits) where they'll have the most
+impact.
 
-Failing these standards risks regulatory penalties, corrective action plans, and — more importantly — real barriers to member care. This project simulates a regional payer's network and tests it against all three dimensions simultaneously, the way a network adequacy or provider strategy team would ahead of a state filing or CMS bid submission.
-
-## Headline Finding
-
-> **The network looks adequate on paper but isn't adequate in practice.**
-
-| Dimension | Compliance Rate |
-|---|---|
-| Distance to nearest provider | **99.7%** ✅ |
-| Provider-to-member ratio (headcount) | **100%** ✅ |
-| Appointment wait time | **78.6%** ⚠️ |
-| **Fully compliant (all standards met)** | **78.3%** |
-
-The plan has plenty of providers within driving distance and technically meets minimum panel-size ratios — but a sizable share of members can't get an appointment within the required window. **Capacity on the roster isn't the same as capacity a member can actually use.** This is the single most common gap real network adequacy filings run into, and it's the one distance-only analyses miss entirely.
-
-### Where it breaks down
-- **Neurology and Behavioral Health** are non-compliant across nearly every county type (as low as 19–43% compliant), driven almost entirely by long waits (22–46 days) rather than distance.
-- **Suburban counties compliance (70.5%) is worse than rural (85.7%)** — a counterintuitive result. Suburban demand is dense enough to overwhelm a comparatively thin specialist panel, while rural counties, despite having far fewer providers, also have far fewer members competing for those slots.
-- **OB/GYN** access lags in the two rural counties (Millbrook, Cedar Ridge) — worth flagging given the acuity of delayed prenatal care.
-
-See `outputs/network_gap_summary.csv` for the full ranked list of every county × specialty combination.
-
-## Methodology
-
-1. **Synthetic data generation** (`scripts/generate_data.py`)
-   - 672 providers across 10 specialties, 8 counties (urban/suburban/rural mix), with panel capacity, accepting-new-patients status, and a simulated "next available appointment" wait time skewed by specialty demand and geography.
-   - 48,000 synthetic members geographically distributed to mirror realistic county population density.
-   - A benchmark standards table modeled on **CMS Medicare Advantage Time & Distance criteria** and common **state Medicaid MCO appointment wait-time standards** (simplified for portfolio use — not an official regulatory table).
-
-2. **Adequacy analysis** (`scripts/network_adequacy_analysis.py`)
-   - For a stratified sample of members (250/county), calculates **haversine distance** to the nearest accepting, in-network provider per specialty and compares it to the distance standard.
-   - Compares each provider's simulated next-available-appointment wait time to the wait-time standard.
-   - Aggregates **provider-to-member ratios** per county × specialty and checks against minimum ratio standards.
-   - Produces a **gap score** ranking every county × specialty combination by severity, combining compliance rate and ratio failure.
-
-3. **Geospatial visualization** (`scripts/coverage_map.py`)
-   - Plots member density against provider locations for the worst-performing specialty (Behavioral Health), annotated with per-county compliance rates.
-
-## Repository Structure
+## Project structure
 
 ```
-Provider-Network-Adequacy-Analysis/
-├── README.md
-├── requirements.txt
-├── assets/
-│   └── logo.png                   # Brand logo (transparent PNG)
+readmission_project/
 ├── data/
-│   ├── providers.csv              # 672 synthetic network providers
-│   ├── members.csv                # 48,000 synthetic member population
-│   └── adequacy_standards.csv     # Distance/wait/ratio benchmark table
-├── scripts/
-│   ├── generate_data.py           # Synthetic data generator
-│   ├── network_adequacy_analysis.py  # Core adequacy calculations + charts
-│   ├── coverage_map.py            # Geospatial coverage visualization
-│   ├── brand_charts.py            # Adds logo/title/tagline header to charts
-│   └── build_one_pager.py         # Builds the branded PDF executive summary
-└── outputs/
-    ├── member_adequacy_detail.csv     # Per-member, per-specialty pass/fail
-    ├── county_specialty_summary.csv   # Aggregated compliance % by county x specialty
-    ├── provider_ratio_summary.csv     # Provider-to-member ratio compliance
-    ├── network_gap_summary.csv        # Ranked list of worst adequacy gaps
-    ├── Provider_Network_Adequacy_One_Pager.pdf   # Branded executive summary
-    ├── charts/                    # Unbranded charts (6 PNGs)
-    └── charts_branded/            # Same charts with logo/title/tagline header
+│   └── generate_synthetic_data.py   # synthetic EHR data (schema mirrors UCI Diabetes 130-Hospitals)
+├── src/
+│   ├── feature_engineering.py       # encoding, composite risk features
+│   ├── train_models.py              # LogReg / Random Forest / XGBoost
+│   ├── evaluate.py                  # AUC, PR-AUC, calibration, precision@K
+│   ├── explainability.py            # SHAP global + individual patient
+│   └── cost_impact.py               # $ savings / ROI / CMS penalty framing
+├── outputs/                          # all generated metrics, plots, CSVs
+├── main.py                           # runs the full pipeline end-to-end
+└── README.md
 ```
 
-## How to Run
+## Quickstart
 
 ```bash
-cd scripts
-python3 generate_data.py              # regenerates data/*.csv
-python3 network_adequacy_analysis.py  # computes compliance + charts
-python3 coverage_map.py               # renders the geospatial coverage chart
-python3 brand_charts.py               # adds logo/title/tagline header to charts
-python3 build_one_pager.py            # builds the branded PDF one-pager
+pip install pandas numpy scikit-learn xgboost shap matplotlib
+python main.py
 ```
 
-Requires: `pandas`, `numpy`, `matplotlib`, `scipy`.
+This runs the full pipeline and writes everything to `outputs/`:
+- `model_comparison_metrics.csv` — AUC, PR-AUC, precision/recall per model
+- `evaluation_curves.png` — ROC, PR, and calibration curves
+- `shap_global_summary.png` — top risk drivers across the population
+- `shap_feature_importance.csv` — ranked feature importance table
+- `shap_individual_patient_example.png` — one patient's risk explained
+- `cost_impact_analysis.csv` — savings/ROI at different intervention capacities
 
-## Recommendations a Network Strategy Team Would Take From This
+## Using real data instead of the synthetic set
 
-1. **Prioritize Behavioral Health and Neurology recruitment or telehealth expansion** in North Metro, West/South Suburban, and both rural counties — the wait-time gap is the binding constraint, not geography, so adding telehealth-only capacity would close most of it without new brick-and-mortar sites.
-2. **Re-examine "adequate" provider ratios as a filing metric alone.** This network passes ratio standards almost everywhere yet still fails members on wait time — ratio compliance should be paired with an appointment-availability audit before every regulatory filing.
-3. **Investigate suburban specialist capacity specifically** — the counterintuitive suburban-worse-than-rural pattern suggests demand modeling for future recruitment should be done at the county level, not lumped into an urban/suburban/rural bucket.
+This environment can't reach UCI/Kaggle directly, so `data/generate_synthetic_data.py`
+builds a synthetic dataset with the **same schema and realistic feature
+relationships** as the standard public benchmark for this problem — the UCI
+**"Diabetes 130-US Hospitals for Years 1999–2008"** dataset (Strack et al.,
+2014; ~101,766 real encounters, the dataset most portfolio/production
+readmission models are built and validated on).
 
-## Data Disclaimer
+To swap in the real thing:
+1. Download from [UCI](https://archive.ics.uci.edu/dataset/296/diabetes+130-us+hospitals+for+years+1999-2008)
+   or [Kaggle](https://www.kaggle.com/datasets/brandao/diabetes)
+2. Rename columns to match `data/generate_synthetic_data.py`'s output schema
+   (or adjust `src/feature_engineering.py`'s column lists to match the raw
+   file's actual column names)
+3. Save as `data/encounters.csv` and re-run `main.py`
 
-All provider, member, and location data in this project is **synthetically generated** for portfolio demonstration purposes. Coordinates are arbitrary offsets and do not represent real geographic locations, providers, or patients. The adequacy standards table is modeled loosely on public CMS/NCQA/Medicaid MCO frameworks but is simplified and should not be used as an authoritative regulatory reference.
+Other good real sources for this problem if you want to extend it:
+- **CMS Medicare claims (SynPUF / research files)** — richer utilization & cost history
+- **Synthea** — fully synthetic but longitudinally realistic EHR generator,
+  useful for simulating a specific patient population (e.g., CHF, COPD cohorts)
+- **MIMIC-IV** (requires credentialed access) — real ICU/hospital data, gold
+  standard for clinical ML research
 
----
-**Contact:** strategichealthcarebianalyst@gmail.com | [LinkedIn](https://linkedin.com/in/aimms-consulting-35895439) | [Portfolio](https://sohail5993.github.io/Strategic-HealthCare-BI-Analyst/)
+## Modeling approach
+
+**Three models, escalating complexity:**
+| Model | Role |
+|---|---|
+| Logistic Regression | Interpretable baseline; coefficients directly reviewable by clinical stakeholders |
+| Random Forest | Captures non-linear interactions without heavy tuning |
+| XGBoost | Best PR-AUC in most published readmission studies; used for SHAP explainability |
+
+**Class imbalance** (~19% positive rate here, consistent with real hospital
+readmission rates) is handled via `class_weight="balanced"` / `scale_pos_weight`
+rather than oversampling, to keep predicted probabilities honest for
+risk-stratification rather than distorting them via synthetic resampling.
+
+**Why PR-AUC over ROC-AUC as the primary metric:** with an imbalanced
+outcome, ROC-AUC can look deceptively good while precision at any
+operationally realistic threshold stays low. PR-AUC and precision@top-K%
+are what actually tell you "if we can only intervene on the top 10-20% of
+discharges, how many of the true positives do we catch."
+
+**Realistic performance expectations:** published 30-day readmission models
+(including CMS's own) typically achieve ROC-AUC in the **0.65–0.70** range.
+This isn't a modeling limitation — readmission is driven heavily by factors
+outside the EHR (social determinants, housing, caregiver support, post-discharge
+adherence), so this ceiling is expected and worth calling out explicitly
+rather than over-claiming performance.
+
+## Explainability
+
+SHAP (TreeExplainer on XGBoost) provides:
+- **Global summary** — which features drive risk across the population
+  (typically: prior utilization, discharge disposition, age, admission
+  type — all clinically sensible and literature-consistent)
+- **Individual explanations** — a waterfall plot for any single patient,
+  so a care coordinator can see *why* a specific patient was flagged,
+  not just their risk score. This is the difference between a model that
+  gets used and one that gets ignored by clinical staff.
+
+## Cost / impact framing
+
+`cost_impact.py` converts model performance into a business case:
+- Sweeps intervention capacity (5%–30% of discharges, matching realistic
+  care-management team sizes)
+- Applies a literature-based ~25% relative risk reduction for enrolled
+  high-risk patients (consistent with Coleman Care Transitions
+  Intervention / Project RED RCT results)
+- Reports net savings and ROI per capacity tier, plus an annualized
+  estimate for a representative hospital
+
+All dollar assumptions are parameterized at the top of `cost_impact.py` —
+swap in your hospital's actual per-readmission cost and program cost for
+a real business case.
+
+## Evaluation metrics reported
+
+- ROC-AUC, PR-AUC (average precision)
+- Precision @ top-10% / top-20% risk
+- Precision / Recall / F1 at an operational threshold (top 20% flagged)
+- Calibration curve (are predicted probabilities trustworthy?)
+
+## Next steps for a production version
+
+1. Validate on real claims/EHR data with a proper temporal holdout (train
+   on earlier years, test on later ones — this dataset uses a random split)
+2. Add social determinants of health (SDOH) features if available —
+   consistently the biggest gap between EHR-only models and true ceiling performance
+2. Fairness audit: check calibration and error rates across race/age/gender
+   subgroups before deployment
+3. Threshold selection in partnership with the care-management team based
+   on actual program capacity, not just F1
+4. Monitor for model/data drift — readmission drivers shift with policy,
+   staffing, and population changes
